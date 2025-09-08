@@ -196,7 +196,8 @@ function saveScore() {
   ranking.push({ name, score });
   ranking.sort((a, b) => b.score - a.score);
   localStorage.setItem("ranking", JSON.stringify(ranking));
-  showRanking();
+  document.getElementById("gameOver").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
 }
 
 function showRanking() {
@@ -232,7 +233,6 @@ document.getElementById("btnVoltar").addEventListener("click", () => {
   document.getElementById("ranking").classList.add("hidden");
 });
 document.getElementById("saveScore").addEventListener("click", saveScore);
-document.getElementById("restart").addEventListener("click", startGame);
 
 canvas.addEventListener("mousemove", (e) => {
   mouseX = e.offsetX;
