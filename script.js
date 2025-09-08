@@ -98,6 +98,11 @@ function startGame() {
   document.getElementById("menu").classList.add("hidden");
   canvas.classList.remove("hidden");
 
+  // Tocar música de fundo
+  let music = document.getElementById("bgMusic");
+  music.volume = 1; // volume moderado
+  music.play();
+
   player = new Player();
   bullets = [];
   enemies = [];
