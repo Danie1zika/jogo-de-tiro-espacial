@@ -243,6 +243,10 @@ canvas.addEventListener("mousemove", (e) => {
   mouseX = e.offsetX;
   mouseY = e.offsetY;
 });
+document.getElementById("btnResetRanking").addEventListener("click", () => {
+  localStorage.removeItem("ranking");
+  document.getElementById("rankingList").innerHTML = "";
+});
 
 canvas.addEventListener("click", () => {
   bullets.push(new Bullet(player.x, player.y, player.angle));
