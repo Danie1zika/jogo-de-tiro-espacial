@@ -14,29 +14,38 @@ body {
 
 #menu {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url("imagens/plano-de-fundo.jpg");
-  background-size: cover;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: red;
+  background: rgba(0, 0, 0, 0.85);
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  color: white;
 }
 
-
-#menu h1, #menu button {
-  font-family: 'Orbitron';
-  margin-top: 200px;
+/* Título em vermelho neon */
+#menu h1 {
+  margin-bottom: 20px;
+  color: red;
+  text-shadow: 0 0 10px red, 0 0 20px darkred;
   opacity: 0;
   transform: translateY(-20px);
-  animation: fadeIn 5s forwards;
+  animation: fadeIn 1s forwards;
+  animation-delay: 0.5s;
 }
 
-#menu h1 {
-  animation-delay: 1s;
+/* Botões com aparição gradual */
+#btnPlay, #btnRanking {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: fadeIn 1s forwards;
+  display: block;
+  margin: 10px auto;
+  padding: 12px 25px;
+  font-size: 18px;
+  font-family: 'Orbitron', sans-serif;
+  border: 2px solid red;
+  background: black;
+  color: red;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 #btnPlay {
@@ -47,11 +56,21 @@ body {
   animation-delay: 2.5s;
 }
 
+#btnPlay:hover, #btnRanking:hover {
+  background: red;
+  color: black;
+  box-shadow: 0 0 10px red;
+}
+
 @keyframes fadeIn {
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.hidden {
+  display: none;
 }
 
 #gameOver {
@@ -124,9 +143,6 @@ button {
 }
 
 
-.hidden {
-  display: none;
-}
 
 canvas {
   display: block;
@@ -212,4 +228,75 @@ canvas {
 #btnVoltar:hover {
   background: rgb(255, 0, 0);
   color: black;
+}
+
+#levelSelect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 3px solid orange;
+  border-radius: 10px;
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  color: white;
+}
+
+#levelSelect h2 {
+  margin-bottom: 20px;
+  color: orange;
+  text-shadow: 0 0 10px orange;
+}
+
+#levelButtons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+#levelButtons button {
+  padding: 12px 25px;
+  font-size: 18px;
+  font-family: 'Orbitron', sans-serif;
+  border: 2px solid orange;
+  background: black;
+  color: orange;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#levelButtons button:hover {
+  background: orange;
+  color: black;
+  box-shadow: 0 0 10px orange;
+}
+
+#btnBackToMenu {
+  margin-top: 15px;
+  background: #333;
+  color: orange;
+  border: 2px solid orange;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+#btnBackToMenu:hover {
+  background: orange;
+  color: black;
+}
+
+#gameLogo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 120px; /* ajuste o tamanho */
+  height: auto;
+  filter: brightness(0) saturate(100%) invert(19%) sepia(100%) saturate(7463%) hue-rotate(357deg) brightness(95%) contrast(116%);
 }

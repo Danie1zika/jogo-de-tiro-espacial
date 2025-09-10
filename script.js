@@ -1,3 +1,5 @@
+let difficulty = "easy"; // padrão
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = 800;
@@ -73,8 +75,13 @@ class Enemy {
     this.x = x;
     this.y = y;
     this.size = 20;
-    this.speedX = (Math.random() - 0.5) * 3;
-    this.speedY = (Math.random() - 0.5) * 3;
+
+    let baseSpeed = 5;
+    if (difficulty === "medium") baseSpeed = 10;
+    if (difficulty === "hard") baseSpeed = 17;
+
+    this.speedX = (Math.random() - 0.5) * baseSpeed;
+    this.speedY = (Math.random() - 0.5) * baseSpeed;
   }
 
   update() {
@@ -97,6 +104,8 @@ class Enemy {
 function startGame() {
   document.getElementById("menu").classList.add("hidden");
   canvas.classList.remove("hidden");
+  document.getElementById("levelSelect").classList.add("hidden");
+  document.getElementById("gameCanvas").classList.remove("hidden");
 
   // Tocar música de fundo
   let music = document.getElementById("bgMusic");
@@ -232,7 +241,6 @@ keys = {};
 document.addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; });
 document.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
 
-document.getElementById("btnPlay").addEventListener("click", startGame);
 document.getElementById("btnRanking").addEventListener("click", showRanking);
 document.getElementById("btnVoltar").addEventListener("click", () => {
   document.getElementById("ranking").classList.add("hidden");
@@ -250,4 +258,29 @@ document.getElementById("btnResetRanking").addEventListener("click", () => {
 
 canvas.addEventListener("click", () => {
   bullets.push(new Bullet(player.x, player.y, player.angle));
+});
+
+document.getElementById("btnPlay").addEventListener("click", () => {
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("levelSelect").classList.remove("hidden");
+});
+
+document.getElementById("btnBackToMenu").addEventListener("click", () => {
+  document.getElementById("levelSelect").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+});
+
+document.getElementById("btnEasy").addEventListener("click", () => {
+  difficulty = "easy";
+  startGame();
+});
+
+document.getElementById("btnMedium").addEventListener("click", () => {
+  difficulty = "medium";
+  startGame();
+});
+
+document.getElementById("btnHard").addEventListener("click", () => {
+  difficulty = "hard";
+  startGame();
 });

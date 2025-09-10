@@ -8,9 +8,22 @@
 <body>
   <!-- Tela inicial -->
   <div id="menu">
+    <img src="sua-logo.png" alt="Logo" id="gameLogo">
     <h1>🌌 Jogo Espacial</h1>
+    <h1>ㅤ</h1>
     <button id="btnPlay">Jogar</button>
     <button id="btnRanking">Ranking</button>
+  </div>
+
+  <!-- Tela de seleção de nível -->
+  <div id="levelSelect" class="hidden">
+    <h2>🎮 Escolha a Dificuldade</h2>
+    <div id="levelButtons">
+      <button id="btnEasy">Fácil</button>
+      <button id="btnMedium">Médio</button>
+      <button id="btnHard">Difícil</button>
+    </div>
+    <button id="btnBackToMenu">Voltar</button>
   </div>
 
   <!-- Tela exclusiva de Ranking -->
@@ -21,32 +34,33 @@
   <button id="btnVoltar">Voltar</button>
 </div>
 
-  <!-- Tela do jogo -->
-  <canvas id="gameCanvas" class="hidden"></canvas>
-
-  <!-- Tela de fim de jogo -->
-  <div id="gameOver" class="hidden">
+<!-- Tela de fim de jogo -->
+<div id="gameOver" class="hidden">
   <h2>🚀 Fim de Jogo!</h2>
   <p id="finalScore"></p>
   <input type="text" id="playerName" placeholder="Digite seu nome">
   <button id="saveScore">Salvar Pontuação</button>
 </div>
 
+  <!-- Tela do jogo -->
+  <canvas id="gameCanvas" class="hidden"></canvas>
+  
   <audio id="bgMusic" loop>
     <source src="audios/numb.mp3" type="audio/mpeg">
   </audio>
-
+  
   <audio id="shootSound">
     <source src="audios/disparo.m4a" type="audio/mpeg">
   </audio>"
-
+  
   <audio id="explosionSound">
-  <source src="audios/explosão.mp3" type="audio/mpeg">
-</audio>
-<audio id="playerExplosionSound">
-  <source src="audios/explosão.mp3" type="audio/mpeg">
-</audio>
-
+    <source src="audios/explosão.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="playerExplosionSound">
+    <source src="audios/explosão.mp3" type="audio/mpeg">
+  </audio>
+  
+  <!-- Scripts -->
   <script src="script.js"></script>
 </body>
 
