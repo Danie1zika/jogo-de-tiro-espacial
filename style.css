@@ -300,3 +300,29 @@ canvas {
   height: auto;
   filter: brightness(0) saturate(100%) invert(19%) sepia(100%) saturate(7463%) hue-rotate(357deg) brightness(95%) contrast(116%);
 }
+
+#levelTransition {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 3px solid yellow;
+  border-radius: 10px;
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  color: white;
+}
+
+#levelTransition h2 {
+  margin-bottom: 10px;
+  color: yellow;
+  text-shadow: 0 0 10px yellow;
+}
+
+#transitionCountdown {
+  font-size: 20px;
+  color: orange;
+}

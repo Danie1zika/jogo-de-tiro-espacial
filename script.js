@@ -7,6 +7,10 @@ canvas.height = 600;
 
 let player, bullets, enemies, score, wave, gameRunning, mouseX, mouseY, keys;
 
+const levels = ["easy", "medium", "hard"];
+let currentLevelIndex = 0;
+
+
 // ---------- Classes ----------
 class Player {
   constructor() {
@@ -120,12 +124,17 @@ function startGame() {
   canvas.classList.remove("hidden");
   document.getElementById("levelSelect").classList.add("hidden");
   document.getElementById("gameCanvas").classList.remove("hidden");
+  document.getElementById("rankingScreen").classList.add("hidden");
+  document.getElementById("levelTransition").classList.add("hidden");
+  
+  difficulty = levels[currentLevelIndex]; // define dificuldade pelo índice
 
   // Tocar música de fundo
   let music = document.getElementById("bgMusic");
   music.volume = 1; // volume moderado
   music.play();
-
+  
+  
   player = new Player();
   bullets = [];
   enemies = [];
@@ -133,8 +142,9 @@ function startGame() {
   wave = 1;
   gameRunning = true;
 
-  spawnEnemies(5);
 
+  spawnEnemies(5);
+  
   gameLoop();
 }
 
@@ -196,6 +206,40 @@ function gameLoop() {
       }
     }
   });
+
+  function advanceLevel() {
+  if (currentLevelIndex < levels.length - 1) {
+    currentLevelIndex++;
+
+    // mostra tela de transição
+    document.getElementById("gameCanvas").classList.add("hidden");
+    document.getElementById("levelTransition").classList.remove("hidden");
+
+    let nextLevelName = levels[currentLevelIndex];
+    let displayName = nextLevelName === "medium" ? "Médio" : "Difícil";
+    document.getElementById("transitionMessage").textContent = "Avançando para o nível " + displayName;
+
+    let countdown = 5;
+    document.getElementById("transitionCountdown").textContent = countdown;
+
+    let timer = setInterval(() => {
+      countdown--;
+      document.getElementById("transitionCountdown").textContent = countdown;
+
+      if (countdown <= 0) {
+        clearInterval(timer);
+        document.getElementById("levelTransition").classList.add("hidden");
+        document.getElementById("gameCanvas").classList.remove("hidden");
+        startGame();
+      }
+    }, 1000);
+
+  } else {
+    // terminou o hard → fim de jogo
+    endGame();
+  }
+}
+
 
   if (enemies.length === 0) {
     if (wave === 1) { wave++; spawnEnemies(10); }
@@ -314,3 +358,7 @@ document.getElementById("btnHard").addEventListener("click", () => {
   difficulty = "hard";
   startGame();
 });
+
+if (enemies.length === 0 && currentWave >= 3) {
+  advanceLevel();
+}
