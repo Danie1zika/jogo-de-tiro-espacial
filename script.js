@@ -25,6 +25,20 @@ class Player {
     if (keys["a"]) this.x -= this.speed;
     if (keys["d"]) this.x += this.speed;
 
+    document.addEventListener("keydown", (e) => {
+  if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") keys.w = true;
+  if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") keys.a = true;
+  if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") keys.s = true;
+  if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") keys.d = true;
+});
+
+document.addEventListener("keyup", (e) => {
+  if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") keys.w = false;
+  if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") keys.a = false;
+  if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") keys.s = false;
+  if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") keys.d = false;
+});
+
     // Limites da tela
     this.x = Math.max(this.size, Math.min(canvas.width - this.size, this.x));
     this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
@@ -243,9 +257,25 @@ document.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; }
 
 document.getElementById("btnRanking").addEventListener("click", showRanking);
 document.getElementById("btnVoltar").addEventListener("click", () => {
-  document.getElementById("ranking").classList.add("hidden");
+document.getElementById("ranking").classList.add("hidden");
 });
-document.getElementById("saveScore").addEventListener("click", saveScore);
+
+document.getElementById("saveScore").addEventListener("click", () => {
+  let name = document.getElementById("playerName").value.trim();
+
+  if (name === "") {
+    alert("⚠️ Você precisa digitar um nome antes de salvar!");
+    return; // impede de sair sem nome
+  }
+
+  saveScore(name, score);
+
+  document.getElementById("gameOver").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+
+  // Limpa o campo para o próximo jogo
+  document.getElementById("playerName").value = "";
+});
 
 canvas.addEventListener("mousemove", (e) => {
   mouseX = e.offsetX;
