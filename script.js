@@ -420,11 +420,10 @@ btnResetRanking.addEventListener('click', ()=> {
   populateRanking();
 });
 
-/* salvar pontuação (campo obrigatório) */
 saveScoreBtn.addEventListener('click', ()=> {
   const name = playerNameInput.value.trim();
   if (!name) {
-    alert('Digite um nome antes de salvar!');
+    showToast("⚠️ Digite um nome antes de salvar!");
     return;
   }
   saveScoreToLocalStorage(name);
@@ -432,6 +431,19 @@ saveScoreBtn.addEventListener('click', ()=> {
   hide('gameOver');
   show('menu');
 });
+
+function showToast(msg) {
+  const toast = document.getElementById('toastMessage');
+  toast.textContent = msg;
+  toast.classList.remove('hidden');
+  toast.classList.add('show');
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.classList.add('hidden'), 400); // espera animação sumir
+  }, 2500); // some em 2.5s
+}
+
 
 /* -------------------------
    DEBUG & fallback (não iniciar automaticamente)

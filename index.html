@@ -41,19 +41,22 @@
   </div>
 
   <!-- TELA DE FIM / SALVAMENTO -->
-  <div id="gameOver" class="hidden">
-    <h2>🚀 Fim de Jogo!</h2>
-    <p id="finalScore"></p>
-    <input type="text" id="playerName" placeholder="Digite seu nome">
-    <button id="saveScore">Salvar Pontuação</button>
-  </div>
+<div id="gameOver" class="hidden">
+  <h2>🚀 Fim de Jogo!</h2>
+  <p id="finalScore"></p>
+  <!-- Toast de erro -->
+  <div id="toastMessage" class="hidden"></div>
+  <input type="text" id="playerName" placeholder="Digite seu nome">
+  <button id="saveScore">Salvar Pontuação</button>
+</div>
+
 
   <!-- CANVAS (começa escondido) -->
   <canvas id="gameCanvas" class="hidden" width="800" height="600"></canvas>
 
   <!-- Áudios (substitua src pelos arquivos reais) -->
   <audio id="bgMusic" loop>
-    <source src="musica-fundo.mp3" type="audio/mpeg">
+    <source src="audios/numb.mp3" type="audio/mpeg">
   </audio>
   <audio id="shootSound">
     <source src="tiro.mp3" type="audio/mpeg">
