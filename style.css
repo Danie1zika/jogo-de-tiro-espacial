@@ -31,6 +31,12 @@ body {
   animation-delay: 0.5s;
 }
 
+#menu #gameLogo {
+  opacity: 0;
+  animation: fadeIn 1s forwards;
+  animation-delay: 0.2s; /* aparece primeiro, antes do título */
+}
+
 /* Botões com aparição gradual */
 #btnPlay, #btnRanking {
   opacity: 0;

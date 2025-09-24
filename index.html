@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Jogo Espacial 2D</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <title>Jogo Espacial</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Tela inicial -->
+  <!-- MENU INICIAL -->
   <div id="menu">
-    <img src="imagens/logo-SENAC.png" alt="Logo" id="gameLogo">
+    <img id="gameLogo" src="imagens/logo-SENAC.png" alt="Logo (substitua)" />
     <h1>Jogo Espacial</h1>
-    <h1>ㅤ</h1>
+    <br>
     <button id="btnPlay">Jogar</button>
     <button id="btnRanking">Ranking</button>
   </div>
 
-  <!-- Tela de seleção de nível -->
+  <!-- SELEÇÃO DE NÍVEL -->
   <div id="levelSelect" class="hidden">
     <h2>🎮 Escolha a Dificuldade</h2>
     <div id="levelButtons">
@@ -26,49 +26,45 @@
     <button id="btnBackToMenu">Voltar</button>
   </div>
 
-  <!-- Tela exclusiva de Ranking -->
+  <!-- TELA DE RANKING -->
   <div id="rankingScreen" class="hidden">
-  <h2>🏆 Ranking Geral</h2>
-  <ul id="rankingList"></ul>
-  <button id="btnResetRanking">Resetar Ranking</button>
-  <button id="btnVoltar">Voltar</button>
-</div>
+    <h2>🏆 Ranking Geral</h2>
+    <ul id="rankingList"></ul>
+    <button id="btnResetRanking">Resetar Ranking</button>
+    <button id="btnVoltar">Voltar</button>
+  </div>
 
-<!-- Tela de fim de jogo -->
-<div id="gameOver" class="hidden">
-  <h2>🚀 Fim de Jogo!</h2>
-  <p id="finalScore"></p>
-  <input type="text" id="playerName" placeholder="Digite seu nome">
-  <button id="saveScore">Salvar Pontuação</button>
-</div>
+  <!-- TRANSIÇÃO ENTRE NÍVEIS -->
+  <div id="levelTransition" class="hidden">
+    <h2 id="transitionMessage"></h2>
+    <p id="transitionCountdown"></p>
+  </div>
 
-  <!-- Tela do jogo -->
-  <canvas id="gameCanvas" class="hidden"></canvas>
+  <!-- TELA DE FIM / SALVAMENTO -->
+  <div id="gameOver" class="hidden">
+    <h2>🚀 Fim de Jogo!</h2>
+    <p id="finalScore"></p>
+    <input type="text" id="playerName" placeholder="Digite seu nome">
+    <button id="saveScore">Salvar Pontuação</button>
+  </div>
 
-  <!-- Tela de transição -->
-<div id="levelTransition" class="hidden">
-  <h2 id="transitionMessage"></h2>
-  <p id="transitionCountdown"></p>
-</div>
+  <!-- CANVAS (começa escondido) -->
+  <canvas id="gameCanvas" class="hidden" width="800" height="600"></canvas>
 
-  
+  <!-- Áudios (substitua src pelos arquivos reais) -->
   <audio id="bgMusic" loop>
-    <source src="audios/numb.mp3" type="audio/mpeg">
+    <source src="musica-fundo.mp3" type="audio/mpeg">
   </audio>
-  
   <audio id="shootSound">
-    <source src="audios/disparo.m4a" type="audio/mpeg">
-  </audio>"
-  
+    <source src="tiro.mp3" type="audio/mpeg">
+  </audio>
   <audio id="explosionSound">
-    <source src="audios/explosão.mp3" type="audio/mpeg">
+    <source src="explosao.mp3" type="audio/mpeg">
   </audio>
   <audio id="playerExplosionSound">
-    <source src="audios/explosão.mp3" type="audio/mpeg">
+    <source src="explosao-jogador.mp3" type="audio/mpeg">
   </audio>
-  
-  <!-- Scripts -->
+
   <script src="script.js"></script>
 </body>
-
 </html>

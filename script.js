@@ -1,67 +1,96 @@
-let difficulty = "easy"; // padrão
+// script.js - lógica completa e robusta
 
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 600;
+/* -------------------------
+   ELEMENTOS & VARIÁVEIS
+   ------------------------- */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-let player, bullets, enemies, score, wave, gameRunning, mouseX, mouseY, keys;
+const btnPlay = document.getElementById('btnPlay');
+const btnRanking = document.getElementById('btnRanking');
+const btnBackToMenu = document.getElementById('btnBackToMenu');
+const btnEasy = document.getElementById('btnEasy');
+const btnMedium = document.getElementById('btnMedium');
+const btnHard = document.getElementById('btnHard');
+const btnVoltar = document.getElementById('btnVoltar');
+const btnResetRanking = document.getElementById('btnResetRanking');
+const rankingListEl = document.getElementById('rankingList');
 
-const levels = ["easy", "medium", "hard"];
+const levelTransitionEl = document.getElementById('levelTransition');
+const transitionMessageEl = document.getElementById('transitionMessage');
+const transitionCountdownEl = document.getElementById('transitionCountdown');
+
+const gameOverEl = document.getElementById('gameOver');
+const finalScoreEl = document.getElementById('finalScore');
+const playerNameInput = document.getElementById('playerName');
+const saveScoreBtn = document.getElementById('saveScore');
+
+const bgMusic = document.getElementById('bgMusic');
+const shootSound = document.getElementById('shootSound');
+const explosionSound = document.getElementById('explosionSound');
+const playerExplosionSound = document.getElementById('playerExplosionSound');
+
+let keys = {};
+let mouse = { x: canvas.width/2, y: canvas.height/2 };
+
+let player, bullets, enemies;
+let score = 0;
+let animationId = null;
+let isGameRunning = false;
+
+const WAVES = [5,10,15];
+const LEVELS = ['easy','medium','hard'];
+const SPEED_BY_LEVEL = { easy: 2, medium: 5, hard: 7 };
+
 let currentLevelIndex = 0;
+let currentWaveIndex = 0;
+let difficulty = 'easy';
+let shotCooldown = 180; // ms
+let lastShotAt = 0;
 
+/* -------------------------
+   UTIL: show/hide
+   ------------------------- */
+function show(id){ document.getElementById(id).classList.remove('hidden'); }
+function hide(id){ document.getElementById(id).classList.add('hidden'); }
 
-// ---------- Classes ----------
+/* -------------------------
+   ENTIDADES
+   ------------------------- */
 class Player {
   constructor() {
-    this.x = canvas.width / 2;
-    this.y = canvas.height / 2;
-    this.size = 20;
+    this.x = canvas.width/2;
+    this.y = canvas.height/2;
+    this.size = 18;
     this.speed = 4;
     this.angle = 0;
-    this.lives = 1; // apenas 1 vida
+    this.lives = 1;
   }
-
   update() {
-    // Movimentação WASD
-    if (keys["w"]) this.y -= this.speed;
-    if (keys["s"]) this.y += this.speed;
-    if (keys["a"]) this.x -= this.speed;
-    if (keys["d"]) this.x += this.speed;
+    // movimento por teclas (WASD + setas)
+    if (keys.w) this.y -= this.speed;
+    if (keys.s) this.y += this.speed;
+    if (keys.a) this.x -= this.speed;
+    if (keys.d) this.x += this.speed;
 
-    document.addEventListener("keydown", (e) => {
-  if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") keys.w = true;
-  if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") keys.a = true;
-  if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") keys.s = true;
-  if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") keys.d = true;
-});
-
-document.addEventListener("keyup", (e) => {
-  if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") keys.w = false;
-  if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") keys.a = false;
-  if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") keys.s = false;
-  if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") keys.d = false;
-});
-
-    // Limites da tela
+    // limites
     this.x = Math.max(this.size, Math.min(canvas.width - this.size, this.x));
     this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
 
-    // Girar para o ponteiro do mouse
-    let dx = mouseX - this.x;
-    let dy = mouseY - this.y;
+    // mira para o mouse
+    let dx = mouse.x - this.x;
+    let dy = mouse.y - this.y;
     this.angle = Math.atan2(dy, dx);
   }
-
   draw() {
     ctx.save();
     ctx.translate(this.x, this.y);
-    ctx.rotate(this.angle + Math.PI / 2); // alinhamento da nave
+    ctx.rotate(this.angle + Math.PI/2);
     ctx.fillStyle = "cyan";
     ctx.beginPath();
     ctx.moveTo(0, -this.size);
-    ctx.lineTo(-this.size / 2, this.size);
-    ctx.lineTo(this.size / 2, this.size);
+    ctx.lineTo(-this.size*0.6, this.size);
+    ctx.lineTo(this.size*0.6, this.size);
     ctx.closePath();
     ctx.fill();
     ctx.restore();
@@ -69,296 +98,342 @@ document.addEventListener("keyup", (e) => {
 }
 
 class Bullet {
-  constructor(x, y, angle) {
+  constructor(x,y,angle) {
     this.x = x;
     this.y = y;
-    this.size = 5;
-    this.speed = 7;
     this.angle = angle;
+    this.speed = 7.5;
+    this.size = 5;
   }
-
-  update() {
+  update(){
     this.x += Math.cos(this.angle) * this.speed;
     this.y += Math.sin(this.angle) * this.speed;
   }
-
-  draw() {
+  draw(){
     ctx.fillStyle = "yellow";
-    ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+    ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
   }
 }
 
 class Enemy {
-  constructor(x, y) {
+  constructor(x,y, speedFactor) {
     this.x = x;
     this.y = y;
-    this.size = 20;
-
-    let baseSpeed = 5;
-    if (difficulty === "medium") baseSpeed = 10;
-    if (difficulty === "hard") baseSpeed = 17;
-
-    this.speedX = (Math.random() - 0.5) * baseSpeed;
-    this.speedY = (Math.random() - 0.5) * baseSpeed;
+    this.size = 16;
+    let base = (Math.random() * speedFactor) + (speedFactor*0.2);
+    this.vx = (Math.random() - 0.5) * base * 1.2;
+    this.vy = (Math.random() - 0.5) * base * 1.2;
   }
-
-  update() {
-    this.x += this.speedX;
-    this.y += this.speedY;
-
-    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+  update(){
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
   }
-
-  draw() {
+  draw(){
     ctx.fillStyle = "red";
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
     ctx.fill();
   }
 }
 
-// ---------- Funções ----------
-function startGame() {
-  document.getElementById("menu").classList.add("hidden");
-  canvas.classList.remove("hidden");
-  document.getElementById("levelSelect").classList.add("hidden");
-  document.getElementById("gameCanvas").classList.remove("hidden");
-  document.getElementById("rankingScreen").classList.add("hidden");
-  document.getElementById("levelTransition").classList.add("hidden");
-  
-  difficulty = levels[currentLevelIndex]; // define dificuldade pelo índice
+/* -------------------------
+   SPAWN & NÍVEIS
+   ------------------------- */
+function spawnWave(waveIndex){
+  enemies = [];
+  let count = WAVES[waveIndex];
+  let speedFactor = SPEED_BY_LEVEL[difficulty];
+  for (let i=0;i<count;i++){
+    let side = Math.floor(Math.random()*4);
+    let x, y;
+    if (side===0){ x=Math.random()*canvas.width; y=0; }
+    else if (side===1){ x=Math.random()*canvas.width; y=canvas.height; }
+    else if (side===2){ x=0; y=Math.random()*canvas.height; }
+    else { x=canvas.width; y=Math.random()*canvas.height; }
 
-  // Tocar música de fundo
-  let music = document.getElementById("bgMusic");
-  music.volume = 1; // volume moderado
-  music.play();
-  
-  
+    enemies.push(new Enemy(x,y, speedFactor));
+  }
+  console.log(`Spawned wave ${waveIndex} (${count}) on difficulty ${difficulty}`);
+}
+
+/* -------------------------
+   CONTROLE DO INÍCIO DO NÍVEL
+   ------------------------- */
+function startLevel(levelIndex, resetScore=true) {
+  // limpa qualquer tela
+  hide('menu'); hide('levelSelect'); hide('rankingScreen'); hide('gameOver'); hide('levelTransition');
+  // mostra canvas
+  document.getElementById('gameCanvas').classList.remove('hidden');
+
+  // configura nível
+  currentLevelIndex = levelIndex;
+  difficulty = LEVELS[currentLevelIndex];
+  if (resetScore) score = 0;
+
+  // inicializa entidades
   player = new Player();
   bullets = [];
   enemies = [];
-  score = 0;
-  wave = 1;
-  gameRunning = true;
+  currentWaveIndex = 0;
 
+  // spawn primeira wave e iniciar loop
+  spawnWave(currentWaveIndex);
+  isGameRunning = true;
+  cancelAnimationFrame(animationId); // garante cancelar anterior
+  animationId = requestAnimationFrame(gameLoop);
 
-  spawnEnemies(5);
-  
-  gameLoop();
+  // tocar música após interação (browser policy)
+  try { bgMusic.volume = 0.45; bgMusic.play().catch(()=>{}); } catch(e){/* ignore */ }
 }
 
-function spawnEnemies(count) {
-  enemies = [];
-  for (let i = 0; i < count; i++) {
-    let side = Math.floor(Math.random() * 4);
-    let x, y;
-    if (side === 0) { x = Math.random() * canvas.width; y = 0; }
-    else if (side === 1) { x = Math.random() * canvas.width; y = canvas.height; }
-    else if (side === 2) { x = 0; y = Math.random() * canvas.height; }
-    else { x = canvas.width; y = Math.random() * canvas.height; }
+/* -------------------------
+   AVANÇAR DE NÍVEL (TRANSIÇÃO)
+   ------------------------- */
+function onLevelComplete(){
+  // se houver próximo nível
+  if (currentLevelIndex < LEVELS.length - 1) {
+    // pausa jogo e mostra tela
+    isGameRunning = false;
+    cancelAnimationFrame(animationId);
+    document.getElementById('gameCanvas').classList.add('hidden');
 
-    enemies.push(new Enemy(x, y));
-  }
-}
-
-function gameLoop() {
-  if (!gameRunning) return;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  player.update();
-  player.draw();
-
-  bullets.forEach((b, i) => {
-    b.update();
-    b.draw();
-    if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
-      bullets.splice(i, 1);
-    }
-  });
-
-  enemies.forEach((e, ei) => {
-    e.update();
-    e.draw();
-
-    // Colisão tiro x inimigo
-    bullets.forEach((b, bi) => {
-      let dx = e.x - b.x;
-      let dy = e.y - b.y;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < e.size) {
-        enemies.splice(ei, 1);
-        bullets.splice(bi, 1);
-        score += 100;
-      }
-    });
-
-    // Colisão jogador x inimigo
-    let dx = e.x - player.x;
-    let dy = e.y - player.y;
-    let dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < e.size + player.size / 2) {
-      player.lives -= 1;
-      if (player.lives <= 0) {
-        endGame();
-      }
-    }
-  });
-
-  function advanceLevel() {
-  if (currentLevelIndex < levels.length - 1) {
-    currentLevelIndex++;
-
-    // mostra tela de transição
-    document.getElementById("gameCanvas").classList.add("hidden");
-    document.getElementById("levelTransition").classList.remove("hidden");
-
-    let nextLevelName = levels[currentLevelIndex];
-    let displayName = nextLevelName === "medium" ? "Médio" : "Difícil";
-    document.getElementById("transitionMessage").textContent = "Avançando para o nível " + displayName;
-
+    let nextIndex = currentLevelIndex + 1;
+    let nextName = LEVELS[nextIndex] === 'medium' ? 'Médio' : 'Difícil';
+    transitionMessageEl.textContent = `Avançando para o nível ${nextName}`;
     let countdown = 5;
-    document.getElementById("transitionCountdown").textContent = countdown;
+    transitionCountdownEl.textContent = countdown;
+    levelTransitionEl.classList.remove('hidden');
 
-    let timer = setInterval(() => {
+    let t = setInterval(()=>{
       countdown--;
-      document.getElementById("transitionCountdown").textContent = countdown;
-
+      transitionCountdownEl.textContent = countdown;
       if (countdown <= 0) {
-        clearInterval(timer);
-        document.getElementById("levelTransition").classList.add("hidden");
-        document.getElementById("gameCanvas").classList.remove("hidden");
-        startGame();
+        clearInterval(t);
+        levelTransitionEl.classList.add('hidden');
+        // inicia próximo nível, sem resetar pontuação
+        startLevel(nextIndex, false);
       }
     }, 1000);
 
   } else {
-    // terminou o hard → fim de jogo
+    // se já estava no último nível -> fim de jogo
     endGame();
   }
 }
 
+/* -------------------------
+   LOOP DO JOGO
+   ------------------------- */
+function gameLoop(){
+  // guarda ID do frame
+  animationId = requestAnimationFrame(gameLoop);
 
-  if (enemies.length === 0) {
-    if (wave === 1) { wave++; spawnEnemies(10); }
-    else if (wave === 2) { wave++; spawnEnemies(15); }
-    else endGame();
+  // clear
+  ctx.clearRect(0,0,canvas.width, canvas.height);
+
+  // update & draw player
+  if (!player) return;
+  player.update();
+  player.draw();
+
+  // atualizar e desenhar tiros
+  for (let i = bullets.length-1; i>=0; i--) {
+    let b = bullets[i];
+    b.update();
+    b.draw();
+    if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(i,1);
   }
 
+  // atualizar inimigos
+  for (let ei = enemies.length-1; ei>=0; ei--) {
+    let e = enemies[ei];
+    e.update();
+    e.draw();
+
+    // colisão jogador x inimigo
+    let dx = e.x - player.x;
+    let dy = e.y - player.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < e.size + player.size*0.6) {
+      // colidiu
+      player.lives -= 1;
+      try { playerExplosionSound.currentTime = 0; playerExplosionSound.play(); } catch(e){}
+      enemies.splice(ei,1);
+      if (player.lives <= 0) {
+        // fim imediato do nível/jogo
+        endGame();
+        return;
+      }
+      continue;
+    }
+
+    // colisão tiro x inimigo
+    for (let bi = bullets.length-1; bi>=0; bi--) {
+      let b = bullets[bi];
+      let dx2 = e.x - b.x;
+      let dy2 = e.y - b.y;
+      let d2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+      if (d2 < e.size) {
+        // matar inimigo
+        enemies.splice(ei,1);
+        bullets.splice(bi,1);
+        score += 100;
+        try { explosionSound.currentTime = 0; explosionSound.play(); } catch(e){}
+        break;
+      }
+    }
+  }
+
+  // HUD
   ctx.fillStyle = "white";
-  ctx.font = "20px Arial";
-  ctx.fillText("Pontuação: " + score, 10, 20);
-  ctx.fillText("Vidas: " + player.lives, 10, 50);
+  ctx.font = "18px Arial";
+  ctx.fillText(`Pontuação: ${score}`, 12, 20);
+  ctx.fillText(`Vidas: ${player.lives}`, 12, 42);
+  ctx.fillText(`Nível: ${LEVELS[currentLevelIndex].toUpperCase()}  Onda: ${currentWaveIndex+1}/${WAVES.length}`, 12, 64);
 
-  requestAnimationFrame(gameLoop);
+  // check waves/enemies
+  if (enemies.length === 0) {
+    // se ainda há waves -> spawn próxima
+    if (currentWaveIndex < WAVES.length - 1) {
+      currentWaveIndex++;
+      spawnWave(currentWaveIndex);
+    } else {
+      // completou todas as waves do nível
+      onLevelComplete();
+    }
+  }
 }
 
+/* -------------------------
+   FINAL DO JOGO - SALVAR
+   ------------------------- */
 function endGame() {
-  gameRunning = false;
-  canvas.classList.add("hidden");
-  document.getElementById("gameOver").classList.remove("hidden");
-  document.getElementById("finalScore").innerText = "Sua pontuação: " + score;
+  isGameRunning = false;
+  cancelAnimationFrame(animationId);
+  document.getElementById('gameCanvas').classList.add('hidden');
+  finalScoreEl.textContent = `Sua pontuação: ${score}`;
+  show('gameOver');
 }
 
-function saveScore() {
-  const name = document.getElementById("playerName").value || "Anônimo";
-  let ranking = JSON.parse(localStorage.getItem("ranking")) || [];
-  ranking.push({ name, score });
-  ranking.sort((a, b) => b.score - a.score);
-  localStorage.setItem("ranking", JSON.stringify(ranking));
-  document.getElementById("gameOver").classList.add("hidden");
-  document.getElementById("menu").classList.remove("hidden");
+function saveScoreToLocalStorage(name){
+  let ranking = JSON.parse(localStorage.getItem('ranking') || '[]');
+  ranking.push({ name: name, score: score });
+  ranking.sort((a,b)=> b.score - a.score);
+  localStorage.setItem('ranking', JSON.stringify(ranking));
 }
 
-function showRanking() {
-  document.getElementById("menu").classList.add("hidden");
-  document.getElementById("gameOver").classList.add("hidden");
-  canvas.classList.add("hidden");
-  document.getElementById("rankingScreen").classList.remove("hidden");
-
-  let ranking = JSON.parse(localStorage.getItem("ranking")) || [];
-  let list = document.getElementById("rankingList");
-  list.innerHTML = "";
+/* -------------------------
+   RANKING UI
+   ------------------------- */
+function showRanking(){
+  hide('menu'); hide('levelSelect'); hide('gameOver'); hide('levelTransition');
+  document.getElementById('gameCanvas').classList.add('hidden');
+  populateRanking();
+  show('rankingScreen');
+}
+function populateRanking(){
+  rankingListEl.innerHTML = '';
+  let ranking = JSON.parse(localStorage.getItem('ranking') || '[]');
+  if (ranking.length === 0) {
+    rankingListEl.innerHTML = '<li>(vazio)</li>';
+    return;
+  }
   ranking.forEach(r => {
-    let li = document.createElement("li");
+    let li = document.createElement('li');
     li.textContent = `${r.name}: ${r.score}`;
-    list.appendChild(li);
+    rankingListEl.appendChild(li);
   });
 }
 
-document.getElementById("btnVoltar").addEventListener("click", () => {
-  document.getElementById("rankingScreen").classList.add("hidden");
-  document.getElementById("menu").classList.remove("hidden");
-});
-
-
-// ---------- Controles ----------
-keys = {};
-document.addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; });
-document.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
-
-document.getElementById("btnRanking").addEventListener("click", showRanking);
-document.getElementById("btnVoltar").addEventListener("click", () => {
-document.getElementById("ranking").classList.add("hidden");
-});
-
-document.getElementById("saveScore").addEventListener("click", () => {
-  let name = document.getElementById("playerName").value.trim();
-
-  if (name === "") {
-    alert("⚠️ Você precisa digitar um nome antes de salvar!");
-    return; // impede de sair sem nome
-  }
-
-  saveScore(name, score);
-
-  document.getElementById("gameOver").classList.add("hidden");
-  document.getElementById("menu").classList.remove("hidden");
-
-  // Limpa o campo para o próximo jogo
-  document.getElementById("playerName").value = "";
-});
-
-canvas.addEventListener("mousemove", (e) => {
-  mouseX = e.offsetX;
-  mouseY = e.offsetY;
-});
-document.getElementById("btnResetRanking").addEventListener("click", () => {
-  localStorage.removeItem("ranking");
-  document.getElementById("rankingList").innerHTML = "";
-});
-
-canvas.addEventListener("click", () => {
-  bullets.push(new Bullet(player.x, player.y, player.angle));
-});
-
-document.getElementById("btnPlay").addEventListener("click", () => {
-  document.getElementById("menu").classList.add("hidden");
-  document.getElementById("levelSelect").classList.remove("hidden");
-});
-
-document.getElementById("btnBackToMenu").addEventListener("click", () => {
-  document.getElementById("levelSelect").classList.add("hidden");
-  document.getElementById("menu").classList.remove("hidden");
-});
-
-document.getElementById("btnEasy").addEventListener("click", () => {
-  difficulty = "easy";
-  startGame();
-});
-
-document.getElementById("btnMedium").addEventListener("click", () => {
-  difficulty = "medium";
-  startGame();
-});
-
-document.getElementById("btnHard").addEventListener("click", () => {
-  difficulty = "hard";
-  startGame();
-});
-
-if (enemies.length === 0 && currentWave >= 3) {
-  advanceLevel();
+/* -------------------------
+   SHOOT helper
+   ------------------------- */
+function shoot(){
+  let now = Date.now();
+  if (now - lastShotAt < shotCooldown) return;
+  lastShotAt = now;
+  let a = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+  bullets.push(new Bullet(player.x, player.y, a));
+  try { shootSound.currentTime = 0; shootSound.play(); } catch(e){}
 }
+
+/* -------------------------
+   EVENTOS & CONTROLES
+   ------------------------- */
+// mouse / click
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = (e.clientX - rect.left) * (canvas.width / rect.width);
+  mouse.y = (e.clientY - rect.top) * (canvas.height / rect.height);
+});
+canvas.addEventListener('click', ()=> {
+  if (!isGameRunning) return;
+  shoot();
+});
+
+// teclas
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k === 'w' || e.code === 'arrowup') keys.w = true;
+  if (k === 'a' || e.code === 'arrowleft') keys.a = true;
+  if (k === 's' || e.code === 'arrowdown') keys.s = true;
+  if (k === 'd' || e.code === 'arrowright') keys.d = true;
+  if (e.code === 'space') {
+    if (isGameRunning) shoot();
+    e.preventDefault();
+  }
+});
+document.addEventListener('keyup', (e) => {
+  const k = e.key.toLowerCase();
+  if (k === 'w' || e.code === 'arrowup') keys.w = false;
+  if (k === 'a' || e.code === 'arrowleft') keys.a = false;
+  if (k === 's' || e.code === 'arrowdown') keys.s = false;
+  if (k === 'd' || e.code === 'arrowright') keys.d = false;
+});
+
+/* -------------------------
+   BOTÕES UI
+   ------------------------- */
+btnPlay.addEventListener('click', ()=> {
+  hide('menu');
+  show('levelSelect');
+});
+
+btnBackToMenu.addEventListener('click', ()=> {
+  show('menu');
+  hide('levelSelect');
+});
+
+btnEasy.addEventListener('click', ()=> startLevel(0, true));
+btnMedium.addEventListener('click', ()=> startLevel(1, true));
+btnHard.addEventListener('click', ()=> startLevel(2, true));
+
+btnRanking.addEventListener('click', showRanking);
+btnVoltar.addEventListener('click', ()=> {
+  hide('rankingScreen');
+  show('menu');
+});
+btnResetRanking.addEventListener('click', ()=> {
+  localStorage.removeItem('ranking');
+  populateRanking();
+});
+
+/* salvar pontuação (campo obrigatório) */
+saveScoreBtn.addEventListener('click', ()=> {
+  const name = playerNameInput.value.trim();
+  if (!name) {
+    alert('Digite um nome antes de salvar!');
+    return;
+  }
+  saveScoreToLocalStorage(name);
+  playerNameInput.value = '';
+  hide('gameOver');
+  show('menu');
+});
+
+/* -------------------------
+   DEBUG & fallback (não iniciar automaticamente)
+   ------------------------- */
+console.log('Script carregado. Abra o menu e selecione o nível para iniciar o jogo.');
